@@ -1,5 +1,7 @@
 package cc.mrbird.system.domain;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -7,7 +9,9 @@ import javax.persistence.Table;
 import cc.mrbird.common.annotation.ExportConfig;
 
 @Table(name = "T_DICT")
-public class Dict {
+public class Dict implements Serializable {
+
+	private static final long serialVersionUID = 1259434280780039424L;
 
 	public static final String SEQ = "seq_dict";
 
@@ -18,7 +22,7 @@ public class Dict {
 
 	@Column(name = "KEY")
 	@ExportConfig(value = "字典Key")
-	private Long key;
+	private String key;
 
 	@Column(name = "VALUE")
 	@ExportConfig(value = "字典Value")
@@ -49,14 +53,14 @@ public class Dict {
 	/**
 	 * @return KEY
 	 */
-	public Long getKey() {
+	public String getKey() {
 		return key;
 	}
 
 	/**
 	 * @param key
 	 */
-	public void setKey(Long key) {
+	public void setKey(String key) {
 		this.key = key;
 	}
 

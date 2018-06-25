@@ -26,7 +26,9 @@ public class JobLogController extends BaseController {
 	@Autowired
 	private JobLogService jobLogService;
 
+	@Log("获取调度日志信息")
 	@RequestMapping("jobLog")
+	@RequiresPermissions("jobLog:list")
 	public String index() {
 		return "job/log/log";
 	}
@@ -36,7 +38,7 @@ public class JobLogController extends BaseController {
 	public Map<String, Object> jobLogList(QueryRequest request, JobLog log) {
 		PageHelper.startPage(request.getPageNum(), request.getPageSize());
 		List<JobLog> list = this.jobLogService.findAllJobLogs(log);
-		PageInfo<JobLog> pageInfo = new PageInfo<JobLog>(list);
+		PageInfo<JobLog> pageInfo = new PageInfo<>(list);
 		return getDataTable(pageInfo);
 	}
 

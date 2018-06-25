@@ -2,6 +2,7 @@ package cc.mrbird.system.controller;
 
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -13,7 +14,6 @@ import cc.mrbird.common.controller.BaseController;
 import cc.mrbird.common.domain.ResponseBo;
 import cc.mrbird.common.domain.Tree;
 import cc.mrbird.common.util.FileUtils;
-import cc.mrbird.common.util.StringUtils;
 import cc.mrbird.system.domain.Menu;
 import cc.mrbird.system.service.MenuService;
 
@@ -22,7 +22,9 @@ public class MenuController extends BaseController {
 	@Autowired
 	private MenuService menuService;
 
+	@Log("获取菜单信息")
 	@RequestMapping("menu")
+	@RequiresPermissions("menu:list")
 	public String index() {
 		return "system/menu/menu";
 	}
@@ -125,13 +127,11 @@ public class MenuController extends BaseController {
 	@RequestMapping("menu/checkMenuName")
 	@ResponseBody
 	public boolean checkMenuName(String menuName, String type, String oldMenuName) {
-		if (StringUtils.hasValue(oldMenuName) && menuName.equalsIgnoreCase(oldMenuName)) {
+		if (StringUtils.isNotBlank(oldMenuName) && menuName.equalsIgnoreCase(oldMenuName)) {
 			return true;
 		}
 		Menu result = this.menuService.findByNameAndType(menuName, type);
-		if (result != null)
-			return false;
-		return true;
+		return result == null;
 	}
 
 	@Log("新增菜单/按钮")
@@ -139,7 +139,7 @@ public class MenuController extends BaseController {
 	@RequestMapping("menu/add")
 	@ResponseBody
 	public ResponseBo addMenu(Menu menu) {
-		String name = "";
+		String name;
 		if (Menu.TYPE_MENU.equals(menu.getType()))
 			name = "菜单";
 		else
@@ -172,7 +172,7 @@ public class MenuController extends BaseController {
 	@RequestMapping("menu/update")
 	@ResponseBody
 	public ResponseBo updateMenu(Menu menu) {
-		String name = "";
+		String name;
 		if (Menu.TYPE_MENU.equals(menu.getType()))
 			name = "菜单";
 		else

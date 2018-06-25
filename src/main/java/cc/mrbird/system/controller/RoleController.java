@@ -3,6 +3,7 @@ package cc.mrbird.system.controller;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -17,7 +18,6 @@ import cc.mrbird.common.controller.BaseController;
 import cc.mrbird.common.domain.QueryRequest;
 import cc.mrbird.common.domain.ResponseBo;
 import cc.mrbird.common.util.FileUtils;
-import cc.mrbird.common.util.StringUtils;
 import cc.mrbird.system.domain.Role;
 import cc.mrbird.system.service.RoleService;
 
@@ -27,7 +27,9 @@ public class RoleController extends BaseController {
 	@Autowired
 	private RoleService roleService;
 
+	@Log("获取角色信息")
 	@RequestMapping("role")
+	@RequiresPermissions("role:list")
 	public String index() {
 		return "system/role/role";
 	}
@@ -37,7 +39,7 @@ public class RoleController extends BaseController {
 	public Map<String, Object> roleList(QueryRequest request, Role role) {
 		PageHelper.startPage(request.getPageNum(), request.getPageSize());
 		List<Role> list = this.roleService.findAllRole(role);
-		PageInfo<Role> pageInfo = new PageInfo<Role>(list);
+		PageInfo<Role> pageInfo = new PageInfo<>(list);
 		return getDataTable(pageInfo);
 	}
 	
@@ -80,13 +82,11 @@ public class RoleController extends BaseController {
 	@RequestMapping("role/checkRoleName")
 	@ResponseBody
 	public boolean checkRoleName(String roleName, String oldRoleName) {
-		if (StringUtils.hasValue(oldRoleName) && roleName.equalsIgnoreCase(oldRoleName)) {
+		if (StringUtils.isNotBlank(oldRoleName) && roleName.equalsIgnoreCase(oldRoleName)) {
 			return true;
 		}
 		Role result = this.roleService.findByName(roleName);
-		if (result != null)
-			return false;
-		return true;
+		return result == null;
 	}
 
 	@Log("新增角色")

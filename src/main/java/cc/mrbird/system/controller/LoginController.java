@@ -3,6 +3,7 @@ package cc.mrbird.system.controller;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.LockedAccountException;
@@ -17,10 +18,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import cc.mrbird.common.annotation.Log;
 import cc.mrbird.common.controller.BaseController;
 import cc.mrbird.common.domain.ResponseBo;
 import cc.mrbird.common.util.MD5Utils;
-import cc.mrbird.common.util.StringUtils;
 import cc.mrbird.common.util.vcode.Captcha;
 import cc.mrbird.common.util.vcode.GifCaptcha;
 import cc.mrbird.system.domain.User;
@@ -40,7 +41,7 @@ public class LoginController extends BaseController {
 	@PostMapping("/login")
 	@ResponseBody
 	public ResponseBo login(String username, String password, String code, Boolean rememberMe) {
-		if (!StringUtils.hasValue(code)) {
+		if (!StringUtils.isNotBlank(code)) {
 			return ResponseBo.warn("验证码不能为空！");
 		}
 		Session session = super.getSession();
@@ -54,11 +55,7 @@ public class LoginController extends BaseController {
 			super.login(token);
 			this.userService.updateLoginTime(username);
 			return ResponseBo.ok();
-		} catch (UnknownAccountException e) {
-			return ResponseBo.error(e.getMessage());
-		} catch (IncorrectCredentialsException e) {
-			return ResponseBo.error(e.getMessage());
-		} catch (LockedAccountException e) {
+		} catch (UnknownAccountException | IncorrectCredentialsException | LockedAccountException e) {
 			return ResponseBo.error(e.getMessage());
 		} catch (AuthenticationException e) {
 			return ResponseBo.error("认证失败！");
@@ -66,7 +63,7 @@ public class LoginController extends BaseController {
 	}
 
 	@GetMapping(value = "gifCode")
-	public void getGifCode(HttpServletResponse response, HttpServletRequest request) {
+	public void getGifCode(HttpServletResponse response) {
 		try {
 			response.setHeader("Pragma", "No-cache");
 			response.setHeader("Cache-Control", "no-cache");
@@ -93,6 +90,7 @@ public class LoginController extends BaseController {
 		return "403";
 	}
 
+	@Log("访问系统")
 	@RequestMapping("/index")
 	public String index(Model model) {
 		User user = super.getCurrentUser();

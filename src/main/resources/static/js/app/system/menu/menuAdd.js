@@ -2,76 +2,71 @@ var validator;
 var $menuAddForm = $("#menu-add-form");
 var $menuName = $menuAddForm.find("input[name='menuName']");
 var $url = $menuAddForm.find("input[name='url']");
-var $perms = $menuAddForm.find("input[name='perms']");
 var $icon = $menuAddForm.find("input[name='icon']");
 var $icon_drop = $menuAddForm.find("div.icon-drop");
 
-$(function() {
-    $perms.parents(".row").hide();
+$(function () {
     $icon_drop.hide();
     validateRule();
     createMenuTree();
 
-    $menuAddForm.find("input[name='type']").change(function() {
+    $menuAddForm.find("input[name='type']").change(function () {
         var $value = $menuAddForm.find("input[name='type']:checked").val();
-        if ($value == "0") {
+        if ($value === "0") {
             $menuName.parent().prev().text("菜单名称：");
             $url.val("").parents(".row").show();
             $icon.val("").parents(".row").show();
-            $perms.parents(".row").hide();
         } else {
             $menuName.parent().prev().text("按钮名称：");
             $url.parents(".row").hide();
             $icon.parents(".row").hide();
-            $perms.val("").parents(".row").show();
         }
     });
 
-    $menuAddForm.find("input[name='icon']").focus(function() {
+    $menuAddForm.find("input[name='icon']").focus(function () {
         $icon_drop.show();
     });
 
-    $("#menu-add").click(function(event) {
+    $("#menu-add").click(function (event) {
         var obj = event.srcElement || event.target;
         if (!$(obj).is("input[name='icon']")) {
             $icon_drop.hide();
         }
     });
 
-    $icon_drop.find(".menu-icon .col-sm-6").on("click", function() {
+    $icon_drop.find(".menu-icon .col-sm-6").on("click", function () {
         var icon = "zmdi " + $(this).find("i").attr("class").split(" ")[1];
         $icon.val(icon);
     });
 
-    $("#menu-add .btn-save").click(function() {
+    $("#menu-add .btn-save").click(function () {
         var name = $(this).attr("name");
         getMenu();
         validator = $menuAddForm.validate();
         var flag = validator.form();
         if (flag) {
-            if (name == "save") {
-                $.post(ctx + "menu/add", $menuAddForm.serialize(), function(r) {
-                    if (r.code == 0) {
+            if (name === "save") {
+                $.post(ctx + "menu/add", $menuAddForm.serialize(), function (r) {
+                    if (r.code === 0) {
                         refresh();
                         closeModal();
                         $MB.n_success(r.msg);
-                    } else $MB.n_danger(r.msg, '.modal');
+                    } else $MB.n_danger(r.msg);
                 });
             }
-            if (name == "update") {
-                $.post(ctx + "menu/update", $menuAddForm.serialize(), function(r) {
-                    if (r.code == 0) {
+            if (name === "update") {
+                $.post(ctx + "menu/update", $menuAddForm.serialize(), function (r) {
+                    if (r.code === 0) {
                         refresh();
                         closeModal();
                         $MB.n_success(r.msg);
-                    } else $MB.n_danger(r.msg, '.modal');
+                    } else $MB.n_danger(r.msg);
                 });
             }
         }
     });
 
-    $("#menu-add .btn-close").click(function() {
-        $("#menu-add-modal-title").html('新增菜单/按钮');
+    $("#menu-add .btn-close").click(function () {
         $("input:radio[value='0']").trigger("click");
         closeModal();
     });
@@ -79,14 +74,15 @@ $(function() {
 });
 
 function closeModal() {
-	$menuName.parent().prev().text("菜单名称：");
+    $menuName.parent().prev().text("菜单名称：");
+    $("#menu-add-modal-title").html('新增菜单/按钮');
+    $("#menu-add-button").attr("name", "save");
     $url.val("").parents(".row").show();
     $icon.val("").parents(".row").show();
-    $perms.parents(".row").hide();
-	$("#menu-add-button").attr("name", "save");
-    $MB.closeAndRestModal("menu-add");
     validator.resetForm();
+    $MB.closeAndRestModal("menu-add");
     $MB.refreshJsTree("menuTree", createMenuTree());
+
 }
 
 function validateRule() {
@@ -102,13 +98,13 @@ function validateRule() {
                     type: "get",
                     dataType: "json",
                     data: {
-                        menuName: function() {
+                        menuName: function () {
                             return $("input[name='menuName']").val().trim();
                         },
-                        oldMenuName: function() {
+                        oldMenuName: function () {
                             return $("input[name='oldMenuName']").val().trim();
                         },
-                        type: function() {
+                        type: function () {
                             return $("input[name='type']").val();
                         }
                     }
@@ -126,8 +122,8 @@ function validateRule() {
 }
 
 function createMenuTree() {
-    $.post(ctx + "menu/tree", {}, function(r) {
-        if (r.code == 0) {
+    $.post(ctx + "menu/tree", {}, function (r) {
+        if (r.code === 0) {
             var data = r.msg;
             $('#menuTree').jstree({
                 "core": {
