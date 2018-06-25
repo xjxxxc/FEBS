@@ -5,6 +5,7 @@ import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.shiro.SecurityUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -14,6 +15,8 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cc.mrbird.common.annotation.Log;
 import cc.mrbird.common.util.AddressUtils;
@@ -30,12 +33,15 @@ public class LogAspect {
 	@Autowired
 	private LogService logService;
 
+	@Autowired
+	ObjectMapper mapper;
+
 	@Pointcut("@annotation(cc.mrbird.common.annotation.Log)")
 	public void pointcut() {
 	}
 
 	@Around("pointcut()")
-	public Object around(ProceedingJoinPoint point) {
+	public Object around(ProceedingJoinPoint point) throws JsonProcessingException {
 		Object result = null;
 		long beginTime = System.currentTimeMillis();
 		try {
@@ -48,7 +54,7 @@ public class LogAspect {
 		return result;
 	}
 
-	private void saveLog(ProceedingJoinPoint joinPoint, long time) {
+	private void saveLog(ProceedingJoinPoint joinPoint, long time) throws JsonProcessingException {
 		User user = (User) SecurityUtils.getSubject().getPrincipal();
 		MethodSignature signature = (MethodSignature) joinPoint.getSignature();
 		Method method = signature.getMethod();
@@ -64,18 +70,18 @@ public class LogAspect {
 		LocalVariableTableParameterNameDiscoverer u = new LocalVariableTableParameterNameDiscoverer();
 		String[] paramNames = u.getParameterNames(method);
 		if (args != null && paramNames != null) {
-			String params = "";
+			StringBuilder params = new StringBuilder();
 			for (int i = 0; i < args.length; i++) {
-				params += "  " + paramNames[i] + ": " + args[i];
+				params.append("  ").append(paramNames[i]).append(": ").append(this.mapper.writeValueAsString(args[i]));
 			}
-			log.setParams(params);
+			log.setParams(params.toString());
 		}
 		HttpServletRequest request = HttpContextUtils.getHttpServletRequest();
 		log.setIp(IPUtils.getIpAddr(request));
 		log.setUsername(user.getUsername());
 		log.setTime(time);
 		log.setCreateTime(new Date());
-		log.setLocation(AddressUtils.getRealAddressByIP(log.getIp()));
+		log.setLocation(AddressUtils.getRealAddressByIP(log.getIp(), mapper));
 		this.logService.save(log);
 	}
 }

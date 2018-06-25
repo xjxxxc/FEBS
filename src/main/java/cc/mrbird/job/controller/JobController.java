@@ -27,7 +27,9 @@ public class JobController extends BaseController {
 	@Autowired
 	private JobService jobService;
 
+	@Log("获取定时任务信息")
 	@RequestMapping("job")
+	@RequiresPermissions("job:list")
 	public String index() {
 		return "job/job/job";
 	}
@@ -37,7 +39,7 @@ public class JobController extends BaseController {
 	public Map<String, Object> jobList(QueryRequest request, Job job) {
 		PageHelper.startPage(request.getPageNum(), request.getPageSize());
 		List<Job> list = this.jobService.findAllJobs(job);
-		PageInfo<Job> pageInfo = new PageInfo<Job>(list);
+		PageInfo<Job> pageInfo = new PageInfo<>(list);
 		return getDataTable(pageInfo);
 	}
 

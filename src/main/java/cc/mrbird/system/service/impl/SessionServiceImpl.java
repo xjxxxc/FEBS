@@ -11,6 +11,8 @@ import org.apache.shiro.subject.support.DefaultSubjectContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import cc.mrbird.common.util.AddressUtils;
 import cc.mrbird.system.domain.User;
 import cc.mrbird.system.domain.UserOnline;
@@ -21,6 +23,9 @@ public class SessionServiceImpl implements SessionService {
 
 	@Autowired
 	private SessionDAO sessionDAO;
+
+	@Autowired
+	ObjectMapper mapper;
 
 	@Override
 	public List<UserOnline> list() {
@@ -44,12 +49,12 @@ public class SessionServiceImpl implements SessionService {
 			userOnline.setStartTimestamp(session.getStartTimestamp());
 			userOnline.setLastAccessTime(session.getLastAccessTime());
 			Long timeout = session.getTimeout();
-			if (timeout == 0l) {
+			if (timeout == 0L) {
 				userOnline.setStatus("0");
 			} else {
 				userOnline.setStatus("1");
 			}
-			String address = AddressUtils.getRealAddressByIP(userOnline.getHost());
+			String address = AddressUtils.getRealAddressByIP(userOnline.getHost(), mapper);
 			userOnline.setLocation(address);
 			userOnline.setTimeout(timeout);
 			list.add(userOnline);
